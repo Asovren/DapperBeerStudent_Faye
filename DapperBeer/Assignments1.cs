@@ -70,7 +70,16 @@ public class Assignments1 : TestHelper
     // @Country is een query parameter placeholder.
     public static List<Beer> GetAllBeersSortedByNameForCountry(string country)
     {
-        throw new NotImplementedException();
+        string sql =
+            @"  SELECT BeerId, Beer.Name, Type, Style, Alcohol, Beer.BrewerId 
+                From Beer
+                INNER JOIN Brewer ON Beer.BrewerId = Brewer.BrewerId
+                WHERE brewer.Country = @Country
+                ORDER BY Country ASC";
+        
+        using var connection = DbHelper.GetConnection();
+        var beers = connection.Query<Beer>(sql, new { Country = country }).ToList();
+        return beers;
     }
     
     // 1.4 Question
@@ -80,7 +89,10 @@ public class Assignments1 : TestHelper
     // Voor deze vraag kijken specifiek naar deze pagina: https://www.learndapper.com/dapper-query
     public static int CountBrewers()
     {
-        throw new NotImplementedException();
+        var sql = @"SELECT Count(BrewerId) FROM Brewer";
+        
+        using var connection = DbHelper.GetConnection();
+        return connection.QuerySingle<int>(sql);
     }
     
     // 1.5 Question
@@ -93,7 +105,10 @@ public class Assignments1 : TestHelper
     // voor Queries die net overeenkomen met de database tabellen.
     public static List<NumberOfBrewersByCountry> NumberOfBrewersByCountry()
     {
-        throw new NotImplementedException();
+        var sql = @"SELECT Count(BrewerId) AS NumberOfBreweries, Country From Brewer GROUP BY Country ORDER BY Count(BrewerId) DESC";
+        
+        using var connection = DbHelper.GetConnection();
+        return connection.Query<NumberOfBrewersByCountry>(sql).ToList();
     }
     
     // 1.6 Question
@@ -101,32 +116,52 @@ public class Assignments1 : TestHelper
     // Je kan in MySQL de LIMIT 1 gebruiken om 1 record terug te krijgen.
     public static Beer GetBeerWithMostAlcohol()
     {
-        throw new NotImplementedException();
+        var sql = @"SELECT BeerId, Name, Type, Style, Alcohol, BrewerId FROM beer ORDER BY Alcohol DESC LIMIT 1";
+        
+        using var connection = DbHelper.GetConnection();
+        return connection.QuerySingle<Beer>(sql);
     }
     
-    // 1.7 Question
+    // 1.7 Question ???
     // Gegeven de brewerId geef de brouwer terug. Let op: Wat moet er gebeuren als de brouwcode niet bestaat?
     // Met andere woorden, welke Dapper methode moet je gebruiken? 
     // Brewer? is een nullable type. Dit betekent dat de waarde null kan zijn,
     // indien de brouwerij niet bestaat voor een bepaalde brewerId.
     public static Brewer? GetBreweryByBrewerId(int brewerId)
     {
-        throw new NotImplementedException();
+        var sql = @"SELECT BrewerId, Name, Country FROM brewer WHERE BrewerId = @BrewerId";
+        
+        using var connection = DbHelper.GetConnection();
+        return connection.QuerySingleOrDefault<Brewer>(sql, new { brewerId = brewerId });
     }
     
     // 1.8 Question
     // Gegeven de BrewerId, geef een overzicht van alle bieren van de brouwerij gesorteerd bij alcohol percentage.
     public static List<Beer> GetAllBeersByBreweryId(int brewerId)
     {
-        throw new NotImplementedException();
+        var sql = @"SELECT BeerId, Name, Type, Style, Alcohol, BrewerId FROM beer WHERE BrewerId = @BrewerId ORDER BY Alcohol ASC";
+        
+        using var connection = DbHelper.GetConnection();
+        return connection.Query<Beer>(sql, new { BrewerId = brewerId }).ToList();
     }
     
-    // 1.9 Question
+    // 1.9 Question ???
     // Geef per cafe (Cafe) aan welke bier (Beer) ze schenken, sorteer op cafe naam en daarna op bier naam.
     // Gebruik hiervoor de class CafeBeer (directory DTO). 
     public static List<CafeBeer> GetCafeBeers()
     {
-        throw new NotImplementedException();
+        var sql = @"
+                SELECT cafe.Name AS CafeName, beer.Name AS Beers 
+                FROM beer 
+                JOIN sells ON sells.BeerId = beer.BeerId 
+                JOIN cafe ON cafe.CafeId = sells.CafeId 
+                
+                ORDER BY beer.Name DESC";
+        
+        using var connection = DbHelper.GetConnection();
+        return connection.Query<CafeBeer>(sql).ToList();
+        
+        //GROUP BY beer.Name, cafe.Name
     }
     
     // De vorige 1.10 Question heb ik verwijderd, deze was nogal lastig
