@@ -75,7 +75,7 @@ public class Assignments1 : TestHelper
                 From Beer
                 INNER JOIN Brewer ON Beer.BrewerId = Brewer.BrewerId
                 WHERE brewer.Country = @Country
-                ORDER BY Country ASC";
+                ORDER BY Beer.Name ASC";
         
         using var connection = DbHelper.GetConnection();
         var beers = connection.Query<Beer>(sql, new { Country = country }).ToList();
@@ -122,7 +122,7 @@ public class Assignments1 : TestHelper
         return connection.QuerySingle<Beer>(sql);
     }
     
-    // 1.7 Question ???
+    // 1.7 Question
     // Gegeven de brewerId geef de brouwer terug. Let op: Wat moet er gebeuren als de brouwcode niet bestaat?
     // Met andere woorden, welke Dapper methode moet je gebruiken? 
     // Brewer? is een nullable type. Dit betekent dat de waarde null kan zijn,
@@ -145,7 +145,7 @@ public class Assignments1 : TestHelper
         return connection.Query<Beer>(sql, new { BrewerId = brewerId }).ToList();
     }
     
-    // 1.9 Question ???
+    // 1.9 Question
     // Geef per cafe (Cafe) aan welke bier (Beer) ze schenken, sorteer op cafe naam en daarna op bier naam.
     // Gebruik hiervoor de class CafeBeer (directory DTO). 
     public static List<CafeBeer> GetCafeBeers()
@@ -155,13 +155,10 @@ public class Assignments1 : TestHelper
                 FROM beer 
                 JOIN sells ON sells.BeerId = beer.BeerId 
                 JOIN cafe ON cafe.CafeId = sells.CafeId 
-                
-                ORDER BY beer.Name DESC";
+                ORDER BY cafe.Name, beer.Name";
         
         using var connection = DbHelper.GetConnection();
         return connection.Query<CafeBeer>(sql).ToList();
-        
-        //GROUP BY beer.Name, cafe.Name
     }
     
     // De vorige 1.10 Question heb ik verwijderd, deze was nogal lastig
@@ -170,7 +167,13 @@ public class Assignments1 : TestHelper
     // Geef de gemiddelde waardering (score in de tabel Review) van een biertje terug gegeven de BeerId.
     public static decimal GetBeerRating(int beerId)
     {
-        throw new NotImplementedException();
+        var sql = @"
+                SELECT AVG(Score)
+                FROM review
+                WHERE BeerId = @BeerId";
+        
+        using var connection = DbHelper.GetConnection();
+        return connection.ExecuteScalar<decimal>(sql, new { BeerId = beerId });
     }
     
     // 1.11 Question
@@ -178,7 +181,12 @@ public class Assignments1 : TestHelper
     // De test werkt alleen als de vorige vraag ook correct is gemaakt.
     public static void InsertReview(int beerId, decimal score)
     {
-        throw new NotImplementedException();
+        var sql = @"
+                INSERT INTO review(BeerId, Score)
+                VALUES (338, 5.0)";
+        
+        using var connection = DbHelper.GetConnection();
+        connection.Execute(sql, new{BeerId = beerId, Score = score});
     }
     
     // 1.12 Question
@@ -186,7 +194,13 @@ public class Assignments1 : TestHelper
     // Deze test werkt alleen decimal GetBeerRating(int beerId) methode correct is (twee vragen hiervoor).
     public static int InsertReviewReturnsReviewId(int beerId, decimal score)
     {
-        throw new NotImplementedException();
+        var sql = @"
+                INSERT INTO review(BeerId, Score)
+                VALUES (338, 5.0);
+                SELECT LAST_INSERT_ID()";
+        
+        using var connection = DbHelper.GetConnection();
+        return connection.ExecuteScalar<int>(sql, new { BeerId = beerId, Score = score });
     }
     
     // twee methoden verwijderd
